@@ -19,6 +19,7 @@ dist-ssr
 server/.env
 server/.env.production
 server/.env.local
+server/ecosystem.config.cjs
 
 # Editor directories and files
 .vscode/*
