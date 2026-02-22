@@ -50,6 +50,11 @@ export default function StudentProfile() {
       const data = await studentsService.getStudentById(id!)
       setStudent(data)
       setWarnings(data.warnings || [])
+
+      // Bloklangan o'quvchi o'z profilini ko'ra olmaydi
+      if (isOwnProfile && data.is_blocked) {
+        setError('blocked')
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'O\'quvchi ma\'lumotlarini yuklashda xatolik')
     } finally {
@@ -116,6 +121,21 @@ export default function StudentProfile() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
         <p className="text-slate-400 text-sm">Yuklanmoqda...</p>
+      </div>
+    )
+  }
+
+  if (error === 'blocked') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <AlertTriangle className="w-8 h-8 text-red-400" />
+        </div>
+        <h2 className="text-xl font-bold text-white">Profil bloklangan</h2>
+        <p className="text-slate-400 text-sm text-center max-w-sm">To'lov bo'yicha qarzdorlik sababli profilingiz bloklangan. Iltimos, manager bilan bog'laning.</p>
+        <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg flex items-center gap-2">
+          <LogOut className="w-4 h-4" /> Chiqish
+        </button>
       </div>
     )
   }
