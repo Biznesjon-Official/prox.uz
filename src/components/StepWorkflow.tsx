@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { stepsService, Step, Test } from '../services/stepsService'
 import { X, ArrowLeft, ArrowRight, Code, FileText, Loader2, XCircle, AlertTriangle, Lightbulb, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+// Loader2 still used for loading stage
 
 interface StepWorkflowProps {
   stepNumber: number
@@ -74,7 +75,7 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
   const [testResults, setTestResults] = useState<Record<number, { selectedIndex: number; correctIndex: number; isCorrect: boolean }>>({})
   const [submitting, setSubmitting] = useState(false)
   const [optionsAnimKey, setOptionsAnimKey] = useState(0)
-  const [lessonReview, setLessonReview] = useState<any>(null)
+  const [codeCorrect, setCodeCorrect] = useState<boolean | null>(null)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
   const [showHints, setShowHints] = useState(false)
   const [showSolution, setShowSolution] = useState(false)
@@ -148,17 +149,34 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
 
   const handleSubmitLesson = async () => {
     if (!lessonContent.trim()) return
-    try {
-      setSubmitting(true)
-      const data = await stepsService.submitStep(stepNumber, lessonContent)
-      if (data.submission) {
-        setLessonReview(data.submission)
-        setCurrentStage('completed')
+    setSubmitting(true)
+
+    // Compare code with solution locally
+    const normalizedCode = lessonContent.trim().replace(/\s+/g, ' ')
+    const normalizedSolution = (step?.codeTask?.solution || '').trim().replace(/\s+/g, ' ')
+    const isCodeCorrect = normalizedCode === normalizedSolution
+    setCodeCorrect(isCodeCorrect)
+
+    if (allTestsPassed && isCodeCorrect) {
+      // Record completion on server
+      try {
+        await stepsService.submitStep(stepNumber, lessonContent)
+      } catch {}
+      setSubmitting(false)
+      setCurrentStage('success')
+    } else {
+      const errors: string[] = []
+      if (!allTestsPassed) {
+        Object.entries(testResults).filter(([, r]) => !r.isCorrect).forEach(([idx]) => {
+          errors.push(`Test ${Number(idx) + 1}: Noto'g'ri javob`)
+        })
       }
-    } catch { 
-      alert('Xatolik yuz berdi') 
-    } finally { 
-      setSubmitting(false) 
+      if (!isCodeCorrect) {
+        errors.push('Kod noto\'g\'ri. Yechimni tekshirib qayta urinib ko\'ring.')
+      }
+      setErrorMessages(errors)
+      setSubmitting(false)
+      setCurrentStage('error')
     }
   }
 
@@ -168,7 +186,7 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
     setTestAnswers({})
     setTestResults({})
     setLessonContent(step?.codeTask?.starterCode || '')
-    setLessonReview(null)
+    setCodeCorrect(null)
     setErrorMessages([])
     setShowHints(false)
     setShowSolution(false)
@@ -178,32 +196,7 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
   const totalTests = tests.length
   const correctTests = Object.values(testResults).filter(r => r.isCorrect).length
   const allTestsPassed = totalTests === 0 || correctTests === totalTests
-  const codeScore = lessonReview?.aiReview?.score ?? null
-  const codeErrors = lessonReview?.aiReview?.errors || []
-  const allCodePassed = codeScore !== null && codeScore >= 70 && codeErrors.length === 0
-  const codeReviewed = lessonReview?.aiReview !== undefined
-  const stepPassed = allTestsPassed && codeReviewed && allCodePassed
-
-  // Check for errors
-  useEffect(() => {
-    if (currentStage === 'completed' && codeReviewed) {
-      const errors: string[] = []
-      if (!allTestsPassed) {
-        Object.entries(testResults).filter(([, r]) => !r.isCorrect).forEach(([idx]) => {
-          errors.push(`Test ${Number(idx) + 1}: Noto'g'ri javob`)
-        })
-      }
-      if (codeErrors.length > 0) {
-        codeErrors.forEach((err: any) => errors.push(err.message || 'Kod xatosi'))
-      }
-      if (errors.length > 0) {
-        setErrorMessages(errors)
-        setCurrentStage('error')
-      } else if (stepPassed) {
-        setCurrentStage('success')
-      }
-    }
-  }, [currentStage, codeReviewed, allTestsPassed, stepPassed])
+  const stepPassed = allTestsPassed && codeCorrect === true
 
   const handleSuccessClose = () => {
     onStepComplete(stepNumber)
@@ -330,8 +323,8 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                       <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-                      <h3 className="text-xl font-bold text-white mb-2">AI tekshirmoqda...</h3>
-                      <p className="text-slate-400">Kodingiz tahlil qilinmoqda, iltimos kuting</p>
+                      <h3 className="text-xl font-bold text-white mb-2">Tekshirilmoqda...</h3>
+                      <p className="text-slate-400">Kodingiz tekshirilmoqda, iltimos kuting</p>
                     </div>
                   </div>
                 ) : (
@@ -441,7 +434,7 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
                       className="py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition"
                     >
                       <CheckCircle2 className="w-5 h-5" />
-                      AI bilan tekshirish
+                      Tekshirish
                     </button>
                   </>
                 )}
@@ -449,86 +442,38 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
             )}
 
 
-            {/* Completed Stage */}
+            {/* Completed Stage - natijalar */}
             {currentStage === 'completed' && (
               <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-                  {/* Test natijalari */}
-                  <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl sm:rounded-2xl flex flex-col">
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-700/40 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-semibold text-white">Test natijalari</span>
-                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-semibold ${allTestsPassed ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {correctTests}/{totalTests}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto max-h-64">
-                      <div className="flex flex-col gap-2">
-                        {tests.map((test, idx) => {
-                          const result = testResults[idx]
-                          return (
-                            <div key={idx} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border ${result?.isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                              <p className="text-[11px] sm:text-sm text-white font-medium mb-1">{idx + 1}. {test.question}</p>
-                              <div className="text-[10px] sm:text-xs">
-                                <p className="text-slate-400">
-                                  Siz: <span className={result?.isCorrect ? 'text-green-400' : 'text-red-400'}>{variants[result?.selectedIndex ?? 0]}) {test.options[result?.selectedIndex ?? 0]}</span>
-                                </p>
-                                {!result?.isCorrect && (
-                                  <p className="text-slate-400 mt-0.5">
-                                    To'g'ri: <span className="text-green-400">{variants[result?.correctIndex ?? 0]}) {test.options[result?.correctIndex ?? 0]}</span>
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
+                <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl sm:rounded-2xl flex flex-col">
+                  <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-700/40 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-semibold text-white">Test natijalari</span>
+                      <span className={`px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-semibold ${allTestsPassed ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {correctTests}/{totalTests}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Kod tekshiruvi */}
-                  <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl sm:rounded-2xl flex flex-col">
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-700/40 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-semibold text-white">AI Kod tekshiruvi</span>
-                        {codeReviewed && (
-                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-semibold ${allCodePassed ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                            {codeScore}/100
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1 p-3 sm:p-4">
-                      {!codeReviewed ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="w-6 h-6 text-blue-500 animate-spin mr-2" />
-                          <p className="text-xs sm:text-sm text-slate-400">AI tekshirmoqda...</p>
-                        </div>
-                      ) : allCodePassed ? (
-                        <div className="flex items-center gap-3 py-4">
-                          <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                            <CheckCircle2 className="w-6 h-6 text-green-500" />
-                          </div>
-                          <div>
-                            <p className="text-sm sm:text-base font-semibold text-green-400">Kod to'g'ri! ✨</p>
-                            <p className="text-[10px] sm:text-xs text-slate-400">Ball: {codeScore}/100</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-3">
-                          {codeErrors.length > 0 && (
-                            <div className="flex flex-col gap-1.5">
-                              <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Xatolar:</p>
-                              {codeErrors.map((err: any, i: number) => (
-                                <div key={i} className="p-1.5 sm:p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                  <p className="text-[10px] sm:text-xs text-red-400">{err.message}</p>
-                                </div>
-                              ))}
+                  <div className="flex-1 p-3 sm:p-4 overflow-y-auto max-h-64">
+                    <div className="flex flex-col gap-2">
+                      {tests.map((test, idx) => {
+                        const result = testResults[idx]
+                        return (
+                          <div key={idx} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border ${result?.isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                            <p className="text-[11px] sm:text-sm text-white font-medium mb-1">{idx + 1}. {test.question}</p>
+                            <div className="text-[10px] sm:text-xs">
+                              <p className="text-slate-400">
+                                Siz: <span className={result?.isCorrect ? 'text-green-400' : 'text-red-400'}>{variants[result?.selectedIndex ?? 0]}) {test.options[result?.selectedIndex ?? 0]}</span>
+                              </p>
+                              {!result?.isCorrect && (
+                                <p className="text-slate-400 mt-0.5">
+                                  To'g'ri: <span className="text-green-400">{variants[result?.correctIndex ?? 0]}) {test.options[result?.correctIndex ?? 0]}</span>
+                                </p>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
