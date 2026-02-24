@@ -1,7 +1,7 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Home, GraduationCap, Wallet, FolderOpen, User, LayoutDashboard, 
-  FileText, X, Sparkles, Trophy, LucideIcon
+  FileText, X, Sparkles, Trophy, LogOut, LucideIcon
 } from 'lucide-react'
 
 interface MenuItem {
@@ -20,6 +20,14 @@ interface SidebarProps {
 
 export default function Sidebar({ isLoggedIn, userRole = null, isMobileOpen = false, onMobileClose }: SidebarProps) {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    navigate('/login')
+    window.location.reload()
+  }
 
   const publicMenuItems: MenuItem[] = [
     { path: '/', label: 'Bosh sahifa', icon: Home },
@@ -71,9 +79,11 @@ export default function Sidebar({ isLoggedIn, userRole = null, isMobileOpen = fa
         {/* Logo Header */}
         <div className="h-[65px] px-4 flex items-center justify-between border-b border-slate-800/50">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
+            <img 
+              src="/loyihalar/icon-GPZq16vU.png" 
+              alt="proX Academy" 
+              className="w-8 h-8 rounded-lg object-contain"
+            />
             <div>
               <h1 className="text-base font-bold text-white">proX Academy</h1>
               <p className="text-[10px] text-slate-500">O'quv platformasi</p>
@@ -88,31 +98,46 @@ export default function Sidebar({ isLoggedIn, userRole = null, isMobileOpen = fa
         </div>
 
         {/* Navigation */}
-        <nav className="p-3 overflow-y-auto" style={{ height: 'calc(100vh - 65px)' }}>
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.path
-              const Icon = item.icon
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => { if (window.innerWidth < 1024 && onMobileClose) onMobileClose() }}
-                  className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                    ${isActive 
-                      ? 'bg-blue-500/10 text-white' 
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }
-                  `}
-                >
-                  <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-blue-400' : ''}`} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Link>
-              )
-            })}
+        <nav className="flex flex-col h-[calc(100vh-65px)]">
+          <div className="flex-1 p-3 overflow-y-auto">
+            <div className="space-y-1">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path
+                const Icon = item.icon
+                
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => { if (window.innerWidth < 1024 && onMobileClose) onMobileClose() }}
+                    className={`
+                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                      ${isActive 
+                        ? 'bg-blue-500/10 text-white' 
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-blue-400' : ''}`} />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
+
+          {/* Logout Button - Only when logged in */}
+          {isLoggedIn && (
+            <div className="p-3 border-t border-slate-800/50">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors border border-red-500/30"
+              >
+                <LogOut className="w-[18px] h-[18px]" />
+                <span className="text-sm font-medium">Chiqish</span>
+              </button>
+            </div>
+          )}
         </nav>
       </aside>
     </>

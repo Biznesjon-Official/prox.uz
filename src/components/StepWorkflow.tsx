@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { stepsService, Step, Test } from '../services/stepsService'
-import { X, ArrowLeft, ArrowRight, Code, FileText, Loader2, XCircle, AlertTriangle, Lightbulb, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+import { X, ArrowLeft, ArrowRight, Code, FileText, Loader2, XCircle, AlertTriangle, Lightbulb, CheckCircle2 } from 'lucide-react'
 // Loader2 still used for loading stage
 
 interface StepWorkflowProps {
@@ -78,7 +78,6 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
   const [codeCorrect, setCodeCorrect] = useState<boolean | null>(null)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
   const [showHints, setShowHints] = useState(false)
-  const [showSolution, setShowSolution] = useState(false)
 
   const variants = ['A', 'B', 'C', 'D']
 
@@ -189,7 +188,6 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
     setCodeCorrect(null)
     setErrorMessages([])
     setShowHints(false)
-    setShowSolution(false)
   }
 
   // Results calculation
@@ -348,13 +346,6 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
                                   Maslahatlar
                                 </button>
                               )}
-                              <button
-                                onClick={() => setShowSolution(!showSolution)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${showSolution ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-slate-700/50 text-slate-400 hover:text-green-400'}`}
-                              >
-                                {showSolution ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                Yechim
-                              </button>
                             </div>
                           </div>
                           <p className="text-sm lg:text-base text-white">{step?.codeTask?.instruction || step?.title}</p>
@@ -373,15 +364,7 @@ export default function StepWorkflow({ stepNumber, onClose, onStepComplete }: St
                             </div>
                           )}
                           
-                          {/* Yechim */}
-                          {showSolution && step?.codeTask?.solution && (
-                            <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                              <p className="text-xs text-green-400 font-medium mb-2">✅ To'g'ri yechim:</p>
-                              <pre className="text-xs text-green-300 font-mono whitespace-pre-wrap overflow-x-auto max-h-40 overflow-y-auto">
-                                {step.codeTask.solution}
-                              </pre>
-                            </div>
-                          )}
+
                         </div>
                       </div>
                     </div>

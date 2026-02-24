@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authService } from '../services/authService'
-import { Loader2, Code2, Sparkles } from 'lucide-react'
+import { Loader2, Code2, Sparkles, Home } from 'lucide-react'
 
 export default function LoginPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const from = (location.state as any)?.from?.pathname || '/'
   
   const [formData, setFormData] = useState({ username: '', password: '' })
@@ -66,6 +67,15 @@ export default function LoginPage() {
         .animate-float { animation: float 6s ease-in-out infinite; }
       `}</style>
       
+      {/* Home button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 hover:text-white text-sm font-medium transition-all backdrop-blur-sm group"
+      >
+        <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
+        <span>Bosh sahifa</span>
+      </button>
+
       {/* Main container */}
       <div className="relative w-full max-w-md z-10">
 

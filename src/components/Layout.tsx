@@ -31,12 +31,19 @@ export default function Layout({ children, isLoggedIn, userRole = null }: Layout
       {/* Mobile Top Navigation - 65px height */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 h-[65px] bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 px-4 z-40 flex items-center">
         <div className="flex items-center justify-between w-full">
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-xl transition"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-xl transition"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <img 
+              src="/prox.png" 
+              alt="ProX Academy" 
+              className="w-[92px] h-[92px] object-contain ml-[10px]"
+            />
+          </div>
           
           {/* Mobile Profile */}
           {isLoggedIn && (
