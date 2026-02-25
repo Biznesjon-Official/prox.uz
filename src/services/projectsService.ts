@@ -39,5 +39,9 @@ export const projectsService = {
   updateProject: async (id: string, projectData: Partial<Project>): Promise<Project> => {
     const response = await api.put(`/projects/${id}`, projectData)
     return response.data
+  },
+
+  deleteProject: async (id: string): Promise<void> => {
+    await api.delete(`/projects/${id}`)
   }
 }

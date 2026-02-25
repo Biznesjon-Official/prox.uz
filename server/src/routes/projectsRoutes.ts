@@ -1,10 +1,11 @@
 import express from 'express'
-import { 
-  getAllProjects, 
+import {
+  getAllProjects,
   getProjectById,
   getProjectsStats,
   createProject,
-  updateProject
+  updateProject,
+  deleteProject
 } from '../controllers/projectsController.js'
 import { authenticateToken } from '../middleware/auth.js'
 
@@ -18,5 +19,6 @@ router.get('/:id', getProjectById)
 // Protected routes
 router.post('/', authenticateToken, createProject)
 router.put('/:id', authenticateToken, updateProject)
+router.delete('/:id', authenticateToken, deleteProject)
 
 export default router

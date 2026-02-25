@@ -84,3 +84,19 @@ export const updateProject = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server xatoligi' })
   }
 }
+
+// Delete project
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    const project = await Project.findByIdAndDelete(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Loyiha topilmadi' })
+    }
+
+    res.json({ message: 'Loyiha o\'chirildi' })
+  } catch (error) {
+    console.error('Delete project error:', error)
+    res.status(500).json({ message: 'Server xatoligi' })
+  }
+}
