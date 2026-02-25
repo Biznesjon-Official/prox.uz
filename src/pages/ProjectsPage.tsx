@@ -28,6 +28,152 @@ const emptyForm: ProjectForm = {
   logo: ''
 }
 
+const staticProjects: Project[] = [
+  {
+    _id: 'static-mebel',
+    title: 'EZOZ MEBEL',
+    description: 'Mebel savdo boshqaruv tizimi — buyurtmalar, sotuvlar va omborni nazorat qilish',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://mebel.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-fitnes',
+    title: 'ALIFIT CRM',
+    description: 'Fitnes zali boshqaruv tizimi — a\'zolik, abonementlar, trenerlar va to\'lovlarni boshqarish',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://fitnes.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-mathacademy',
+    title: 'Math Academy',
+    description: 'Ta\'lim boshqaruv tizimi — o\'qituvchilar, o\'quvchilar va darslarni boshqarish',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://mathacademy.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-ozoda',
+    title: 'Ozoda Mebel',
+    description: 'Mebel ishlab chiqarish va sotish boshqaruv tizimi',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://ozoda.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-universal',
+    title: 'Universal Bozor POS',
+    description: 'Biznes boshqaruv tizimi — savdo nuqtasi (POS) va moliyaviy nazorat',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://pos.universalbozor.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-matorlife',
+    title: 'Mator Life',
+    description: 'Avtomobil servisi boshqaruv tizimi — xizmatlar, mijozlar va hisobotlar',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://matorlife.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-dalnaboy',
+    title: 'Dalnoboy Shop',
+    description: 'Onlayn do\'kon boshqaruv tizimi',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://dalnaboyshop.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-xujatech',
+    title: 'XUJATECH POS',
+    description: 'Savdo nuqtasi (POS) boshqaruv tizimi — PWA ilova',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://xujatech.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-sardorbek',
+    title: 'Sardorbek Furnetura',
+    description: 'Mebel va furnitura biznesini boshqarish tizimi',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://sardorbek.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-climart',
+    title: 'CLIMART ERP',
+    description: 'Biznes boshqaruv ERP tizimi — kompaniya uchun amaliy yechimlar',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'https://climart.biznesjon.uz',
+    createdAt: ''
+  },
+  {
+    _id: 'static-akmalaka',
+    title: 'Akmalaka',
+    description: 'Rossiyadan yog\'och import-export va vagon sotuvlarini boshqarish tizimi',
+    technology: 'React, Node.js',
+    technologies: ['React', 'Node.js', 'MongoDB'],
+    students: 0,
+    status: 'active',
+    progress: 100,
+    deadline: '2026-01-01',
+    url: 'http://akmalaka.biznesjon.uz',
+    createdAt: ''
+  }
+]
+
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +194,7 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       const data = await projectsService.getAllProjects()
-      setProjects(data)
+      setProjects([...data, ...staticProjects])
     } catch (err: any) {
       setError(err.response?.data?.message || 'Xatolik')
     } finally {
@@ -197,7 +343,7 @@ export default function ProjectsPage() {
                 key={project._id}
                 className={`group relative bg-slate-800/40 rounded-xl border border-slate-700/40 p-4 transition hover:bg-slate-800/60 hover:border-slate-600/50`}
               >
-                {isAdmin && (
+                {isAdmin && !project._id.startsWith('static-') && (
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition z-10">
                     <button
                       onClick={(e) => { e.stopPropagation(); openEditModal(project) }}
